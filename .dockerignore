@@ -1,0 +1,14 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+coverage
+*.log
+*.md
+.eslintrc*
+eslint.config*
+.prettierrc
+pnpm-lock.yaml
