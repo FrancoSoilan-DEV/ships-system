@@ -11,4 +11,3 @@ coverage
 .eslintrc*
 eslint.config*
 .prettierrc
-pnpm-lock.yaml

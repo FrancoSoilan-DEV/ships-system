@@ -7,16 +7,15 @@ services:
     container_name: ships-app
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@ships-db:5432/${POSTGRES_DB}
-      REDIS_URL: redis://ships-redis:6379
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    volumes:
+      - .:/app
+      - /app/node_modules
     depends_on:
       ships-db:
-        condition: service_healthy
-      ships-redis:
         condition: service_healthy
     restart: unless-stopped
 
