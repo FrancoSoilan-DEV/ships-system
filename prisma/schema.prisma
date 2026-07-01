@@ -1,0 +1,377 @@
+// ─────────────────────────────────────────────────────────────
+// Prisma Schema — ships-system
+// ─────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  CAPTAIN
+  CLIENT
+}
+
+enum ShipStatus {
+  AVAILABLE      // listo para asignar
+  ON_VOYAGE      // en viaje activo
+  MAINTENANCE    // en mantenimiento
+  UNAVAILABLE    // fuera de servicio
+}
+
+enum ShipType {
+  CONTAINER      // portacontenedores estándar
+  BULK_CARRIER   // granel (granos, minerales)
+  TANKER         // líquidos / gas
+  REEFER         // refrigerado
+  HEAVY_LIFT     // carga pesada especial
+}
+
+enum CargoType {
+  GENERAL        // carga estándar
+  REFRIGERATED   // requiere frío
+  HAZARDOUS      // materiales peligrosos
+  BULK           // granel
+  OVERSIZED      // carga especial / sobredimensionada
+}
+
+enum VoyageStatus {
+  SCHEDULED      // programado, aún no salió
+  IN_PROGRESS    // en curso
+  COMPLETED      // finalizado
+  CANCELLED      // cancelado
+}
+
+enum ChatSessionType {
+  AI_AGENT       // visitante hablando con la IA
+  HUMAN          // admin / captain / client en chat real
+}
+
+enum ChatSessionStatus {
+  ACTIVE
+  ESCALATED      // la IA lo pasó a un humano
+  CLOSED
+}
+
+enum EscalationStatus {
+  PENDING        // esperando que un admin tome el caso
+  ASSIGNED       // un admin lo tomó
+  RESOLVED       // resuelto
+}
+
+// ─────────────────────────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones según rol
+  captain          Captain?
+  client           Client?
+
+  // Chat — sesiones donde este usuario es participante
+  chatSessions     ChatSession[]    @relation("SessionParticipant")
+
+  // Sesiones de escalación que este admin atendió
+  escalationsHandled EscalationJob[] @relation("EscalationAdmin")
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────────────────────
+// CAPTAIN (perfil extendido del usuario con rol CAPTAIN)
+// ─────────────────────────────────────────────────────────────
+
+model Captain {
+  id            String   @id @default(cuid())
+  licenseNumber String   @unique
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+
+  // El barco que comanda actualmente (puede no tener ninguno)
+  ship          Ship?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("captains")
+}
+
+// ─────────────────────────────────────────────────────────────
+// CLIENT (perfil extendido del usuario con rol CLIENT)
+// ─────────────────────────────────────────────────────────────
+
+model Client {
+  id          String  @id @default(cuid())
+  companyName String?
+  phone       String?
+  country     String?
+  userId      String  @unique
+  user        User    @relation(fields: [userId], references: [id])
+
+  voyages     Voyage[]
+
+  // Métricas acumuladas
+  totalVoyages  Int   @default(0)
+  totalSpent    Float @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("clients")
+}
+
+// ─────────────────────────────────────────────────────────────
+// SHIP
+// ─────────────────────────────────────────────────────────────
+
+model Ship {
+  id               String     @id @default(cuid())
+  name             String     @unique
+  flag             String                          // país de bandera
+  type             ShipType
+  status           ShipStatus @default(AVAILABLE)
+  yearBuilt        Int
+  capacityTeu      Int                             // contenedores estándar (TEU)
+  maxWeightTons    Float                           // toneladas máximas de carga
+  basePrice        Float                           // precio base por día (cargado por admin)
+  imageUrl         String?
+
+  // Capitán asignado (puede no tener)
+  captainId        String?    @unique
+  captain          Captain?   @relation(fields: [captainId], references: [id])
+
+  // Tripulación
+  crew             CrewMember[]
+
+  // Viajes
+  voyages          Voyage[]
+
+  // Mantenimiento
+  maintenanceRecords Maintenance[]
+
+  // Métricas acumuladas
+  totalVoyages     Int   @default(0)
+  totalNauticalMiles Float @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("ships")
+}
+
+// ─────────────────────────────────────────────────────────────
+// CREW MEMBER
+// ─────────────────────────────────────────────────────────────
+
+model CrewMember {
+  id         String  @id @default(cuid())
+  name       String
+  role       String                              // ej: "Chief Engineer", "Sailor"
+  nationality String
+  shipId     String
+  ship       Ship    @relation(fields: [shipId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("crew_members")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TARIFF
+// Reglas de precio — el admin las configura
+// finalCost = basePrice × shipTypeMultiplier × cargoMultiplier × distanceMultiplier
+// ─────────────────────────────────────────────────────────────
+
+model Tariff {
+  id   String @id @default(cuid())
+  name String                                    // ej: "Contenedor a Europa — Hazardous"
+
+  // ¿A qué tipo de barco aplica?
+  shipType          ShipType
+  shipTypeMultiplier Float                        // ej: 1.0 container, 1.3 tanker
+
+  // ¿A qué tipo de carga aplica?
+  cargoType         CargoType
+  cargoMultiplier   Float                         // ej: 1.0 general, 1.8 hazardous
+
+  // ¿A qué región de destino aplica?
+  destinationRegion String                        // ej: "South America", "Europe"
+  distanceMultiplier Float                        // ej: 1.0 regional, 2.5 intercontinental
+
+  isActive Boolean @default(true)
+
+  voyages Voyage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tariffs")
+}
+
+// ─────────────────────────────────────────────────────────────
+// VOYAGE
+// ─────────────────────────────────────────────────────────────
+
+model Voyage {
+  id          String       @id @default(cuid())
+  origin      String
+  destination String
+  country     String
+  region      String                              // para matching con tariff
+  durationDays Int
+  status      VoyageStatus @default(SCHEDULED)
+  departureAt DateTime
+  arrivalAt   DateTime
+
+  // Cálculo de costo
+  // finalCost = ship.basePrice × durationDays × tariff.shipTypeMultiplier
+  //             × tariff.cargoMultiplier × tariff.distanceMultiplier
+  finalCost   Float
+
+  // Relaciones
+  shipId    String
+  ship      Ship    @relation(fields: [shipId], references: [id])
+
+  clientId  String
+  client    Client  @relation(fields: [clientId], references: [id])
+
+  tariffId  String
+  tariff    Tariff  @relation(fields: [tariffId], references: [id])
+
+  cargo     Cargo?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("voyages")
+}
+
+// ─────────────────────────────────────────────────────────────
+// CARGO
+// ─────────────────────────────────────────────────────────────
+
+model Cargo {
+  id          String    @id @default(cuid())
+  type        CargoType
+  weightTons  Float
+  teuCount    Int                                 // contenedores usados
+  description String?
+
+  voyageId  String  @unique
+  voyage    Voyage  @relation(fields: [voyageId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("cargo")
+}
+
+// ─────────────────────────────────────────────────────────────
+// MAINTENANCE
+// ─────────────────────────────────────────────────────────────
+
+model Maintenance {
+  id          String   @id @default(cuid())
+  description String
+  performedAt DateTime
+  nextDueAt   DateTime?
+  cost        Float?
+  notes       String?
+
+  shipId String
+  ship   Ship   @relation(fields: [shipId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("maintenance_records")
+}
+
+// ─────────────────────────────────────────────────────────────
+// CHAT SESSION
+// Una conversación — puede ser con la IA o entre humanos
+// ─────────────────────────────────────────────────────────────
+
+model ChatSession {
+  id        String            @id @default(cuid())
+  type      ChatSessionType
+  status    ChatSessionStatus @default(ACTIVE)
+
+  // Participantes humanos (opcional — las sesiones de IA no tienen usuario aún)
+  participants User[]         @relation("SessionParticipant")
+
+  // Si la sesión fue creada por un visitante no registrado (agente IA)
+  visitorName  String?
+  visitorEmail String?
+
+  messages     ChatMessage[]
+  escalation   EscalationJob?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("chat_sessions")
+}
+
+// ─────────────────────────────────────────────────────────────
+// CHAT MESSAGE
+// ─────────────────────────────────────────────────────────────
+
+model ChatMessage {
+  id        String  @id @default(cuid())
+  content   String
+  isFromAI  Boolean @default(false)
+
+  // null si es un mensaje de la IA o de un visitante no registrado
+  senderId  String?
+
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("chat_messages")
+}
+
+// ─────────────────────────────────────────────────────────────
+// ESCALATION JOB
+// Cuando la IA decide pasar el chat a un admin humano
+// ─────────────────────────────────────────────────────────────
+
+model EscalationJob {
+  id        String           @id @default(cuid())
+  reason    String
+  status    EscalationStatus @default(PENDING)
+
+  sessionId String      @unique
+  session   ChatSession @relation(fields: [sessionId], references: [id])
+
+  // El admin que tomó el caso
+  adminId   String?
+  admin     User?       @relation("EscalationAdmin", fields: [adminId], references: [id])
+
+  assignedAt DateTime?
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@map("escalation_jobs")
+}
