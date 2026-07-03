@@ -368,3 +368,19 @@ section { padding: 5rem 3rem; }
 .auth-footer a:hover {
   text-decoration: underline;
 }
+
+.message p {
+  margin: 0 0 0.4rem 0;
+}
+
+.message p:last-child {
+  margin-bottom: 0;
+}
+
+.message strong {
+  color: var(--accent);
+}
+
+.message br + br {
+  display: none;
+}

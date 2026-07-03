@@ -8,6 +8,12 @@ const btnSend = document.getElementById('btn-send');
 
 let chatOpened = false;
 
+// ID único de sesión para esta visita
+const sessionId = 'session-' + Math.random().toString(36).slice(2);
+
+// Historial de la conversación para darle contexto a la IA
+const conversationHistory = [];
+
 function openChat() {
   chatWidget.classList.remove('hidden');
   if (!chatOpened) {
@@ -24,61 +30,53 @@ if (btnCloseChat) btnCloseChat.addEventListener('click', () => chatWidget.classL
 if (btnSend) btnSend.addEventListener('click', sendMessage);
 if (chatInput) chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-function sendMessage() {
+async function sendMessage() {
   const text = chatInput.value.trim();
   if (!text) return;
+
   addMessage('user', text);
+  conversationHistory.push({ role: 'user', content: text });
   chatInput.value = '';
   showTyping();
-  setTimeout(() => {
-    removeTyping();
-    addMessage('bot', getBotResponse(text));
-  }, 1000);
-}
 
-function getBotResponse(text) {
-  const lower = text.toLowerCase();
-  if (currentLang === 'es') {
-    if (lower.includes('precio') || lower.includes('costo') || lower.includes('cuánto') || lower.includes('cuanto')) {
-      return 'El costo de un viaje depende del tipo de barco, duración, tipo de carga y distancia. ¿Podés contarme más sobre tu carga y destino?';
-    }
-    if (lower.includes('barco') || lower.includes('flota') || lower.includes('embarcacion')) {
-      return 'Contamos con portacontenedores, buques tanque, buques frigoríficos, graneleros y barcos de carga pesada. ¿Qué tipo de carga necesitás transportar?';
-    }
-    if (lower.includes('hola') || lower.includes('buenas') || lower.includes('hey')) {
-      return '¡Hola! ¿En qué puedo ayudarte hoy? Puedo cotizarte un viaje o contarte sobre nuestra flota.';
-    }
-    if (lower.includes('ruta') || lower.includes('destino') || lower.includes('donde') || lower.includes('dónde')) {
-      return 'Operamos rutas en Sudamérica, Europa, Asia y Norteamérica. ¿Cuál es tu puerto de origen y destino?';
-    }
-    if (lower.includes('cuenta') || lower.includes('registro') || lower.includes('registrar')) {
-      return 'Puedo crear tu cuenta ahora mismo. Solo necesito tu nombre completo y correo electrónico. ¿Me los compartís?';
-    }
-    return 'Entiendo tu consulta. Para darte una respuesta más precisa, te voy a conectar con un asesor humano en breve. ¿Está bien?';
-  } else {
-    if (lower.includes('price') || lower.includes('cost') || lower.includes('how much')) {
-      return 'The cost of a voyage depends on ship type, duration, cargo type and distance. Can you tell me more about your cargo and destination?';
-    }
-    if (lower.includes('ship') || lower.includes('fleet') || lower.includes('vessel')) {
-      return 'We have container ships, tankers, reefer vessels, bulk carriers and heavy lift ships. What type of cargo do you need to transport?';
-    }
-    if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
-      return 'Hello! How can I help you today? I can quote a voyage or tell you about our fleet.';
-    }
-    if (lower.includes('route') || lower.includes('destination') || lower.includes('where')) {
-      return 'We operate routes in South America, Europe, Asia and North America. What are your origin and destination ports?';
-    }
-    if (lower.includes('account') || lower.includes('register') || lower.includes('sign up')) {
-      return 'I can create your account right now. I just need your full name and email address. Can you share them with me?';
-    }
-    return 'I understand your query. To give you a more accurate answer, I\'ll connect you with a human advisor shortly. Is that okay?';
+  try {
+    const res = await fetch('/api/ai-agent/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId,
+        message: text,
+        // Mandamos el historial sin el mensaje actual (ya lo manda en message)
+        history: conversationHistory.slice(0, -1),
+      }),
+    });
+
+    const data = await res.json();
+    removeTyping();
+    addMessage('bot', data.message);
+    conversationHistory.push({ role: 'assistant', content: data.message });
+
+  } catch {
+    removeTyping();
+    addMessage('bot', currentLang === 'es'
+      ? 'Error de conexión. Intentá de nuevo.'
+      : 'Connection error. Please try again.'
+    );
   }
 }
 
 function addMessage(type, text) {
   const msg = document.createElement('div');
   msg.classList.add('message', type);
-  msg.innerHTML = text;
+  
+  // Convertir saltos de línea y formato básico a HTML
+  const formatted = text
+    .replace(/\n\n/g, '</p><p>')           // párrafos
+    .replace(/\n/g, '<br/>')               // saltos de línea
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // **negrita**
+    .replace(/\*(.*?)\*/g, '<em>$1</em>'); // *itálica*
+
+  msg.innerHTML = `<p>${formatted}</p>`;
   chatMessages.appendChild(msg);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
