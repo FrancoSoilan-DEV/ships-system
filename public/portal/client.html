@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ships System - Portal Cliente</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/portal.css" />
+</head>
+<body class="portal-body">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">⚓ Ships System</div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-section="dashboard">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label" data-i18n="nav.dashboard">Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-section="voyages">
+        <span class="nav-icon">🚢</span>
+        <span class="nav-label" data-i18n="nav.voyages">Mis viajes</span>
+      </a>
+      <a href="#" class="nav-item" data-section="quote">
+        <span class="nav-icon">💰</span>
+        <span class="nav-label" data-i18n="nav.quote">Cotizar viaje</span>
+      </a>
+      <a href="#" class="nav-item" data-section="profile">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label" data-i18n="nav.profile">Mi perfil</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="lang-toggle" id="lang-toggle">🌐 EN</button>
+      <button class="btn-logout" id="btn-logout" data-i18n="nav.logout">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="portal-main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+      <div class="topbar-user">
+        <span class="user-name" id="user-name">...</span>
+        <span class="user-role-badge">CLIENT</span>
+      </div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section class="portal-section active" id="section-dashboard">
+      <div class="section-title">
+        <h1 data-i18n="client.dashboard.title">Bienvenido de vuelta</h1>
+        <p data-i18n="client.dashboard.subtitle">Aquí tenés un resumen de tu actividad.</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">🚢</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-total-voyages">—</div>
+            <div class="stat-label" data-i18n="client.stat.voyages">Viajes totales</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-total-spent">—</div>
+            <div class="stat-label" data-i18n="client.stat.spent">Total gastado</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-active-voyages">—</div>
+            <div class="stat-label" data-i18n="client.stat.active">Viajes activos</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="recent-section">
+        <h2 data-i18n="client.recent.title">Viajes recientes</h2>
+        <div class="table-container">
+          <table class="data-table" id="recent-voyages-table">
+            <thead>
+              <tr>
+                <th data-i18n="table.origin">Origen</th>
+                <th data-i18n="table.destination">Destino</th>
+                <th data-i18n="table.ship">Barco</th>
+                <th data-i18n="table.status">Estado</th>
+                <th data-i18n="table.cost">Costo</th>
+              </tr>
+            </thead>
+            <tbody id="recent-voyages-body">
+              <tr><td colspan="5" class="table-empty" data-i18n="table.empty">Sin viajes registrados</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VOYAGES -->
+    <section class="portal-section" id="section-voyages">
+      <div class="section-title">
+        <h1 data-i18n="client.voyages.title">Mis viajes</h1>
+        <p data-i18n="client.voyages.subtitle">Historial completo de tus viajes contratados.</p>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th data-i18n="table.origin">Origen</th>
+              <th data-i18n="table.destination">Destino</th>
+              <th data-i18n="table.ship">Barco</th>
+              <th data-i18n="table.departure">Salida</th>
+              <th data-i18n="table.arrival">Llegada</th>
+              <th data-i18n="table.status">Estado</th>
+              <th data-i18n="table.cost">Costo</th>
+            </tr>
+          </thead>
+          <tbody id="voyages-body">
+            <tr><td colspan="7" class="table-empty" data-i18n="table.empty">Sin viajes registrados</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- QUOTE -->
+    <section class="portal-section" id="section-quote">
+      <div class="section-title">
+        <h1 data-i18n="client.quote.title">Cotizar viaje</h1>
+        <p data-i18n="client.quote.subtitle">Usá nuestro asistente IA para obtener una cotización instantánea.</p>
+      </div>
+      <div class="quote-container">
+        <div class="chat-box">
+          <div class="chat-messages" id="quote-messages"></div>
+          <div class="chat-input">
+            <input type="text" id="quote-input" data-i18n-placeholder="chat.placeholder" placeholder="Escribí tu consulta..." />
+            <button id="quote-send">➤</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFILE -->
+    <section class="portal-section" id="section-profile">
+      <div class="section-title">
+        <h1 data-i18n="client.profile.title">Mi perfil</h1>
+        <p data-i18n="client.profile.subtitle">Información de tu cuenta.</p>
+      </div>
+      <div class="profile-card">
+        <div class="profile-avatar" id="profile-avatar">?</div>
+        <div class="profile-info">
+          <div class="profile-field">
+            <label data-i18n="auth.name">Nombre</label>
+            <span id="profile-name">—</span>
+          </div>
+          <div class="profile-field">
+            <label data-i18n="auth.email">Email</label>
+            <span id="profile-email">—</span>
+          </div>
+          <div class="profile-field">
+            <label data-i18n="profile.role">Rol</label>
+            <span>CLIENT</span>
+          </div>
+          <div class="profile-field">
+            <label data-i18n="profile.member">Miembro desde</label>
+            <span id="profile-since">—</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/js/i18n.js"></script>
+  <script src="/js/portal.js"></script>
+  <script src="/js/client.js"></script>
+</body>
+</html>
