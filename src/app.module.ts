@@ -8,6 +8,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AIAgentModule } from './ai-agent/ai-agent.module';
+import { ShipsModule } from './ships/ships.module';
+import { VoyagesModule } from './voyages/voyages.module';
 
 
 @Module({
@@ -20,6 +22,8 @@ import { AIAgentModule } from './ai-agent/ai-agent.module';
     AuthModule,
     UsersModule,
     AIAgentModule,
+    ShipsModule,
+    VoyagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

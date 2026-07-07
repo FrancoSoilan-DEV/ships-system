@@ -1,11 +1,14 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding database...');
 
+  // ── Ships ──────────────────────────────────────────────────
   await prisma.ship.createMany({
+    skipDuplicates: true,
     data: [
       {
         name: 'MV Asunción Star',
@@ -64,8 +67,88 @@ async function main() {
       },
     ],
   });
-
   console.log('✅ Ships created');
+
+  // ── Users ──────────────────────────────────────────────────
+  const superadminHash = await bcrypt.hash('super123', 10);
+  const adminHash      = await bcrypt.hash('admin123', 10);
+  const captainHash    = await bcrypt.hash('captain123', 10);
+  const clientHash     = await bcrypt.hash('client123', 10);
+
+  const superadmin = await prisma.user.upsert({
+    where: { email: 'superadmin@ships.com' },
+    update: {},
+    create: {
+      name: 'Super Admin',
+      email: 'superadmin@ships.com',
+      password: superadminHash,
+      role: 'SUPERADMIN',
+    },
+  });
+  console.log('✅ Superadmin created:', superadmin.email);
+
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@ships.com' },
+    update: {},
+    create: {
+      name: 'Admin User',
+      email: 'admin@ships.com',
+      password: adminHash,
+      role: 'ADMIN',
+    },
+  });
+  console.log('✅ Admin created:', admin.email);
+
+  const captain = await prisma.user.upsert({
+    where: { email: 'captain@ships.com' },
+    update: {},
+    create: {
+      name: 'Captain Rodriguez',
+      email: 'captain@ships.com',
+      password: captainHash,
+      role: 'CAPTAIN',
+    },
+  });
+  console.log('✅ Captain created:', captain.email);
+
+  // Crear perfil de capitán
+  await prisma.captain.upsert({
+    where: { userId: captain.id },
+    update: {},
+    create: {
+      userId: captain.id,
+      licenseNumber: 'CAP-2024-001',
+    },
+  });
+
+  const client = await prisma.user.upsert({
+    where: { email: 'client@ships.com' },
+    update: {},
+    create: {
+      name: 'Client User',
+      email: 'client@ships.com',
+      password: clientHash,
+      role: 'CLIENT',
+    },
+  });
+  console.log('✅ Client created:', client.email);
+
+  // Crear perfil de cliente
+  await prisma.client.upsert({
+    where: { userId: client.id },
+    update: {},
+    create: {
+      userId: client.id,
+    },
+  });
+
+  console.log('\n🎉 Seed completado!');
+  console.log('─────────────────────────────');
+  console.log('superadmin@ships.com / super123');
+  console.log('admin@ships.com      / admin123');
+  console.log('captain@ships.com    / captain123');
+  console.log('client@ships.com     / client123');
+  console.log('─────────────────────────────');
 }
 
 main()
