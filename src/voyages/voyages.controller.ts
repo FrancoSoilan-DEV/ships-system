@@ -15,21 +15,36 @@ interface QuoteDto {
   distanceKm: number;
 }
 
+interface CreateVoyageDto {
+  shipId: string;
+  cargoType: string;
+  durationDays: number;
+  origin: string;
+  destination: string;
+  distanceKm: number;
+  weightTons: number;
+  departureAt: string;
+}
+
 @Controller('voyages')
 export class VoyagesController {
   constructor(private readonly voyagesService: VoyagesService) {}
 
-  // GET /api/voyages/my → viajes del cliente logueado
   @UseGuards(JwtAuthGuard)
   @Get('my')
   findMyVoyages(@Request() req: RequestWithUser) {
     return this.voyagesService.findMyVoyages(req.user.id);
   }
 
-  // POST /api/voyages/quote → cotizar viaje
   @UseGuards(JwtAuthGuard)
   @Post('quote')
   quote(@Body() dto: QuoteDto) {
     return this.voyagesService.quote(dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post()
+  create(@Body() dto: CreateVoyageDto, @Request() req: RequestWithUser) {
+    return this.voyagesService.create(req.user.id, dto);
   }
 }

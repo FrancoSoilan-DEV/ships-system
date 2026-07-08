@@ -238,6 +238,11 @@ function toggleLang() {
 
 document.addEventListener('DOMContentLoaded', () => {
   applyTranslations();
-  const btn = document.getElementById('lang-toggle');
-  if (btn) btn.addEventListener('click', toggleLang);
+  
+  // Solo agregar el listener si portal.js NO está cargado
+  // (en la landing y login, portal.js no existe)
+  if (typeof initNavigation === 'undefined') {
+    const btn = document.getElementById('lang-toggle');
+    if (btn) btn.addEventListener('click', toggleLang);
+  }
 });
