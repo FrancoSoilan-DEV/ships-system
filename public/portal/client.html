@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/css/portal.css" />
 </head>
-<body class="portal-body">
+<body class="portal-body" data-portal="true">
 
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
@@ -15,32 +15,32 @@
     <nav class="sidebar-nav">
       <a href="#" class="nav-item active" data-section="dashboard">
         <span class="nav-icon">📊</span>
-        <span class="nav-label">Dashboard</span>
+        <span class="nav-label" data-i18n="portal.nav.dashboard">Dashboard</span>
       </a>
       <a href="#" class="nav-item" data-section="fleet">
         <span class="nav-icon">🚢</span>
-        <span class="nav-label">Explorar flota</span>
+        <span class="nav-label" data-i18n="portal.nav.fleet">Explorar flota</span>
       </a>
       <a href="#" class="nav-item" data-section="quote">
         <span class="nav-icon">💰</span>
-        <span class="nav-label">Cotizar viaje</span>
+        <span class="nav-label" data-i18n="portal.nav.quote">Cotizar viaje</span>
       </a>
       <a href="#" class="nav-item" data-section="voyages">
         <span class="nav-icon">📦</span>
-        <span class="nav-label">Mis viajes</span>
+        <span class="nav-label" data-i18n="portal.nav.voyages">Mis viajes</span>
       </a>
       <a href="#" class="nav-item" data-section="support">
         <span class="nav-icon">💬</span>
-        <span class="nav-label">Soporte</span>
+        <span class="nav-label" data-i18n="portal.nav.support">Soporte</span>
       </a>
       <a href="#" class="nav-item" data-section="profile">
         <span class="nav-icon">👤</span>
-        <span class="nav-label">Mi perfil</span>
+        <span class="nav-label" data-i18n="portal.nav.profile">Mi perfil</span>
       </a>
     </nav>
     <div class="sidebar-footer">
       <button class="lang-toggle" id="lang-toggle">🌐 EN</button>
-      <button class="btn-logout" id="btn-logout">Cerrar sesión</button>
+      <button class="btn-logout" id="btn-logout" data-i18n="portal.nav.logout">Cerrar sesión</button>
     </div>
   </aside>
 
@@ -59,77 +59,77 @@
     <!-- DASHBOARD -->
     <section class="portal-section active" id="section-dashboard">
       <div class="section-title">
-        <h1 id="dashboard-welcome">Bienvenido de vuelta</h1>
-        <p>Aquí tenés un resumen de tu actividad.</p>
+        <h1 id="dashboard-welcome" data-i18n="portal.dashboard.title">Bienvenido de vuelta</h1>
+        <p data-i18n="portal.dashboard.subtitle">Aquí tenés un resumen de tu actividad.</p>
       </div>
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon">🚢</div>
           <div class="stat-info">
             <div class="stat-value" id="stat-total-voyages">—</div>
-            <div class="stat-label">Viajes totales</div>
+            <div class="stat-label" data-i18n="portal.stat.voyages">Viajes totales</div>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">💰</div>
           <div class="stat-info">
             <div class="stat-value" id="stat-total-spent">—</div>
-            <div class="stat-label">Total gastado</div>
+            <div class="stat-label" data-i18n="portal.stat.spent">Total gastado</div>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">📦</div>
           <div class="stat-info">
             <div class="stat-value" id="stat-active-voyages">—</div>
-            <div class="stat-label">Viajes activos</div>
+            <div class="stat-label" data-i18n="portal.stat.active">Viajes activos</div>
           </div>
         </div>
         <div class="stat-card clickable" onclick="goToSection('fleet')">
           <div class="stat-icon">🌊</div>
           <div class="stat-info">
             <div class="stat-value" id="stat-available-ships">—</div>
-            <div class="stat-label">Barcos disponibles</div>
+            <div class="stat-label" data-i18n="portal.stat.ships">Barcos disponibles</div>
           </div>
         </div>
       </div>
 
       <div class="recent-section">
         <div class="recent-header">
-          <h2>Viajes recientes</h2>
-          <a href="#" class="link-action" onclick="goToSection('voyages')">Ver todos →</a>
+          <h2 data-i18n="portal.recent.title">Viajes recientes</h2>
+          <a href="#" class="link-action" onclick="goToSection('voyages')" data-i18n="portal.recent.viewall">Ver todos →</a>
         </div>
         <div class="table-container">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Origen</th>
-                <th>Destino</th>
-                <th>Barco</th>
-                <th>Estado</th>
-                <th>Costo</th>
+                <th data-i18n="portal.table.origin">Origen</th>
+                <th data-i18n="portal.table.destination">Destino</th>
+                <th data-i18n="portal.table.ship">Barco</th>
+                <th data-i18n="portal.table.status">Estado</th>
+                <th data-i18n="portal.table.cost">Costo</th>
               </tr>
             </thead>
             <tbody id="recent-voyages-body">
-              <tr><td colspan="5" class="table-empty">Sin viajes registrados</td></tr>
+              <tr><td colspan="5" class="table-empty" data-i18n="portal.table.empty">Sin viajes registrados</td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
       <div class="quick-actions">
-        <h2>Acciones rápidas</h2>
+        <h2 data-i18n="portal.actions.title">Acciones rápidas</h2>
         <div class="actions-grid">
           <button class="action-card" onclick="goToSection('fleet')">
             <span class="action-icon">🚢</span>
-            <span class="action-label">Ver flota disponible</span>
+            <span class="action-label" data-i18n="portal.action.fleet">Ver flota disponible</span>
           </button>
           <button class="action-card" onclick="goToSection('quote')">
             <span class="action-icon">💰</span>
-            <span class="action-label">Cotizar nuevo viaje</span>
+            <span class="action-label" data-i18n="portal.action.quote">Cotizar nuevo viaje</span>
           </button>
           <button class="action-card" onclick="goToSection('support')">
             <span class="action-icon">💬</span>
-            <span class="action-label">Contactar soporte</span>
+            <span class="action-label" data-i18n="portal.action.support">Contactar soporte</span>
           </button>
         </div>
       </div>
@@ -138,126 +138,115 @@
     <!-- FLEET -->
     <section class="portal-section" id="section-fleet">
       <div class="section-title">
-        <h1>Explorar flota</h1>
-        <p>Conocé nuestros barcos disponibles, sus capacidades y precios base.</p>
+        <h1 data-i18n="portal.fleet.title">Explorar flota</h1>
+        <p data-i18n="portal.fleet.subtitle">Conocé nuestros barcos disponibles, sus capacidades y precios base.</p>
       </div>
-
       <div class="fleet-filters">
-        <button class="filter-btn active" data-type="ALL">Todos</button>
-        <button class="filter-btn" data-type="CONTAINER">Contenedores</button>
-        <button class="filter-btn" data-type="BULK_CARRIER">Graneleros</button>
-        <button class="filter-btn" data-type="TANKER">Tanqueros</button>
-        <button class="filter-btn" data-type="REEFER">Frigoríficos</button>
-        <button class="filter-btn" data-type="HEAVY_LIFT">Carga pesada</button>
+        <button class="filter-btn active" data-type="ALL" data-i18n="portal.filter.all">Todos</button>
+        <button class="filter-btn" data-type="CONTAINER" data-i18n="portal.filter.container">Contenedores</button>
+        <button class="filter-btn" data-type="BULK_CARRIER" data-i18n="portal.filter.bulk">Graneleros</button>
+        <button class="filter-btn" data-type="TANKER" data-i18n="portal.filter.tanker">Tanqueros</button>
+        <button class="filter-btn" data-type="REEFER" data-i18n="portal.filter.reefer">Frigoríficos</button>
+        <button class="filter-btn" data-type="HEAVY_LIFT" data-i18n="portal.filter.heavy">Carga pesada</button>
       </div>
-
       <div class="fleet-grid" id="fleet-grid">
-        <div class="loading-state">Cargando barcos...</div>
+        <div class="loading-state" data-i18n="portal.loading">Cargando barcos...</div>
       </div>
     </section>
 
     <!-- QUOTE -->
     <section class="portal-section" id="section-quote">
       <div class="section-title">
-        <h1>Cotizar viaje</h1>
-        <p>Completá el formulario y obtené el precio estimado al instante.</p>
+        <h1 data-i18n="portal.quote.title">Cotizar viaje</h1>
+        <p data-i18n="portal.quote.subtitle">Completá el formulario y obtené el precio estimado al instante.</p>
       </div>
-
       <div class="quote-layout">
-        <!-- Formulario -->
         <div class="quote-form-card">
-          <h2>Datos del viaje</h2>
-
+          <h2 data-i18n="portal.quote.form.title">Datos del viaje</h2>
           <div class="form-group">
-            <label>Barco</label>
+            <label data-i18n="portal.quote.ship">Barco</label>
             <select id="quote-ship">
-              <option value="">Seleccioná un barco...</option>
+              <option value="" data-i18n="portal.quote.ship.placeholder">Seleccioná un barco...</option>
             </select>
           </div>
-
           <div class="form-row">
             <div class="form-group">
-              <label>Origen</label>
-              <input type="text" id="quote-origin" placeholder="Ej: Asunción, PY" />
+              <label data-i18n="portal.quote.origin">Origen</label>
+              <input type="text" id="quote-origin" data-i18n-placeholder="portal.quote.origin.ph" placeholder="Ej: Asunción, PY" />
             </div>
             <div class="form-group">
-              <label>Destino</label>
-              <input type="text" id="quote-destination" placeholder="Ej: Rotterdam, NL" />
+              <label data-i18n="portal.quote.destination">Destino</label>
+              <input type="text" id="quote-destination" data-i18n-placeholder="portal.quote.destination.ph" placeholder="Ej: Rotterdam, NL" />
             </div>
           </div>
-
           <div class="form-row">
             <div class="form-group">
-              <label>Tipo de carga</label>
+              <label data-i18n="portal.quote.cargo">Tipo de carga</label>
               <select id="quote-cargo">
-                <option value="GENERAL">General</option>
-                <option value="REFRIGERATED">Refrigerada</option>
-                <option value="HAZARDOUS">Peligrosa</option>
-                <option value="BULK">A granel</option>
-                <option value="OVERSIZED">Sobredimensionada</option>
+                <option value="GENERAL" data-i18n="portal.cargo.general">General</option>
+                <option value="REFRIGERATED" data-i18n="portal.cargo.refrigerated">Refrigerada</option>
+                <option value="HAZARDOUS" data-i18n="portal.cargo.hazardous">Peligrosa</option>
+                <option value="BULK" data-i18n="portal.cargo.bulk">A granel</option>
+                <option value="OVERSIZED" data-i18n="portal.cargo.oversized">Sobredimensionada</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Duración estimada (días)</label>
-              <input type="number" id="quote-days" min="1" max="365" placeholder="Ej: 14" />
+              <label data-i18n="portal.quote.days">Duración estimada (días)</label>
+              <input type="number" id="quote-days" min="1" max="365" data-i18n-placeholder="portal.quote.days.ph" placeholder="Ej: 14" />
             </div>
           </div>
-
           <div class="form-group">
-            <label>Distancia estimada (km)</label>
-            <input type="number" id="quote-distance" min="1" placeholder="Ej: 9500" />
-            <small class="form-hint">¿No sabés la distancia? <a href="#" onclick="goToSection('support')">Consultá con soporte</a></small>
+            <label data-i18n="portal.quote.distance">Distancia estimada (km)</label>
+            <input type="number" id="quote-distance" min="1" data-i18n-placeholder="portal.quote.distance.ph" placeholder="Ej: 9500" />
+            <small class="form-hint"><span data-i18n="portal.quote.hint">¿No sabés la distancia?</span> <a href="#" onclick="goToSection('support')" data-i18n="portal.quote.hint.link">Consultá con soporte</a></small>
           </div>
-
           <div class="form-error hidden" id="quote-error"></div>
-
-          <button class="btn-primary btn-full" id="btn-quote">Calcular cotización</button>
+          <button class="btn-primary btn-full" id="btn-quote" data-i18n="portal.quote.btn">Calcular cotización</button>
         </div>
 
-        <!-- Resultado -->
         <div class="quote-result hidden" id="quote-result">
-          <h2>📊 Cotización estimada</h2>
+          <h2 data-i18n="portal.result.title">📊 Cotización estimada</h2>
           <div class="quote-breakdown">
             <div class="breakdown-item">
-              <span>🚢 Barco</span>
+              <span data-i18n="portal.result.ship">🚢 Barco</span>
               <strong id="res-ship">—</strong>
             </div>
             <div class="breakdown-item">
-              <span>📍 Ruta</span>
+              <span data-i18n="portal.result.route">📍 Ruta</span>
               <strong id="res-route">—</strong>
             </div>
             <div class="breakdown-item">
-              <span>📅 Duración</span>
+              <span data-i18n="portal.result.days">📅 Duración</span>
               <strong id="res-days">—</strong>
             </div>
             <div class="breakdown-item">
-              <span>📦 Tipo de carga</span>
+              <span data-i18n="portal.result.cargo">📦 Tipo de carga</span>
               <strong id="res-cargo">—</strong>
             </div>
             <div class="breakdown-item">
-              <span>💵 Precio base/día</span>
+              <span data-i18n="portal.result.base">💵 Precio base/día</span>
               <strong id="res-base">—</strong>
             </div>
             <div class="breakdown-item">
-              <span>✖️ Multiplicador barco</span>
+              <span data-i18n="portal.result.shipmult">✖️ Multiplicador barco</span>
               <strong id="res-ship-mult">—</strong>
             </div>
             <div class="breakdown-item">
-              <span>✖️ Multiplicador carga</span>
+              <span data-i18n="portal.result.cargomult">✖️ Multiplicador carga</span>
               <strong id="res-cargo-mult">—</strong>
             </div>
             <div class="breakdown-item">
-              <span>✖️ Multiplicador distancia</span>
+              <span data-i18n="portal.result.distmult">✖️ Multiplicador distancia</span>
               <strong id="res-dist-mult">—</strong>
             </div>
             <div class="breakdown-total">
-              <span>💰 Total estimado</span>
+              <span data-i18n="portal.result.total">💰 Total estimado</span>
               <strong id="res-total">—</strong>
             </div>
           </div>
           <div class="quote-actions">
-            <button class="btn-primary" id="btn-contact-quote">Contratar este viaje</button>
-            <button class="btn-secondary" id="btn-recalculate">Recalcular</button>
+            <button class="btn-primary" id="btn-contact-quote" data-i18n="portal.result.contract">Contratar este viaje</button>
+            <button class="btn-secondary" id="btn-recalculate" data-i18n="portal.result.recalc">Recalcular</button>
           </div>
         </div>
       </div>
@@ -266,24 +255,24 @@
     <!-- VOYAGES -->
     <section class="portal-section" id="section-voyages">
       <div class="section-title">
-        <h1>Mis viajes</h1>
-        <p>Historial completo de tus viajes contratados.</p>
+        <h1 data-i18n="portal.voyages.title">Mis viajes</h1>
+        <p data-i18n="portal.voyages.subtitle">Historial completo de tus viajes contratados.</p>
       </div>
       <div class="table-container">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Origen</th>
-              <th>Destino</th>
-              <th>Barco</th>
-              <th>Salida</th>
-              <th>Llegada</th>
-              <th>Estado</th>
-              <th>Costo</th>
+              <th data-i18n="portal.table.origin">Origen</th>
+              <th data-i18n="portal.table.destination">Destino</th>
+              <th data-i18n="portal.table.ship">Barco</th>
+              <th data-i18n="portal.table.departure">Salida</th>
+              <th data-i18n="portal.table.arrival">Llegada</th>
+              <th data-i18n="portal.table.status">Estado</th>
+              <th data-i18n="portal.table.cost">Costo</th>
             </tr>
           </thead>
           <tbody id="voyages-body">
-            <tr><td colspan="7" class="table-empty">Sin viajes registrados</td></tr>
+            <tr><td colspan="7" class="table-empty" data-i18n="portal.table.empty">Sin viajes registrados</td></tr>
           </tbody>
         </table>
       </div>
@@ -292,40 +281,37 @@
     <!-- SUPPORT -->
     <section class="portal-section" id="section-support">
       <div class="section-title">
-        <h1>Soporte</h1>
-        <p>¿Necesitás ayuda? Nuestro equipo está disponible para vos.</p>
+        <h1 data-i18n="portal.support.title">Soporte</h1>
+        <p data-i18n="portal.support.subtitle">¿Necesitás ayuda? Nuestro equipo está disponible para vos.</p>
       </div>
-
       <div class="support-options">
         <div class="support-card">
           <div class="support-icon">📧</div>
-          <h3>Email</h3>
-          <p>Respondemos en menos de 24 horas hábiles.</p>
+          <h3 data-i18n="portal.support.email">Email</h3>
+          <p data-i18n="portal.support.email.desc">Respondemos en menos de 24 horas hábiles.</p>
           <a href="mailto:soporte@ships-system.com" class="btn-secondary">soporte@ships-system.com</a>
         </div>
         <div class="support-card">
           <div class="support-icon">📞</div>
-          <h3>Teléfono</h3>
-          <p>Lunes a viernes de 8:00 a 18:00.</p>
+          <h3 data-i18n="portal.support.phone">Teléfono</h3>
+          <p data-i18n="portal.support.phone.desc">Lunes a viernes de 8:00 a 18:00.</p>
           <a href="tel:+595981000000" class="btn-secondary">+595 981 000 000</a>
         </div>
         <div class="support-card highlight">
           <div class="support-icon">💬</div>
-          <h3>Chat en vivo</h3>
-          <p>Hablá directamente con un asesor ahora mismo.</p>
-          <button class="btn-primary" id="btn-open-support-chat">Iniciar chat</button>
+          <h3 data-i18n="portal.support.chat">Chat en vivo</h3>
+          <p data-i18n="portal.support.chat.desc">Hablá directamente con un asesor ahora mismo.</p>
+          <button class="btn-primary" id="btn-open-support-chat" data-i18n="portal.support.chat.btn">Iniciar chat</button>
         </div>
       </div>
-
-      <!-- Chat de soporte -->
       <div class="support-chat hidden" id="support-chat">
         <div class="support-chat-header">
-          <span>💬 Chat con soporte</span>
+          <span data-i18n="portal.support.chat.header">💬 Chat con soporte</span>
           <button id="btn-close-support-chat">✕</button>
         </div>
         <div class="chat-messages" id="support-messages"></div>
         <div class="chat-input">
-          <input type="text" id="support-input" placeholder="Escribí tu mensaje..." />
+          <input type="text" id="support-input" data-i18n-placeholder="portal.support.chat.placeholder" placeholder="Escribí tu mensaje..." />
           <button id="support-send">➤</button>
         </div>
       </div>
@@ -334,26 +320,26 @@
     <!-- PROFILE -->
     <section class="portal-section" id="section-profile">
       <div class="section-title">
-        <h1>Mi perfil</h1>
-        <p>Información de tu cuenta.</p>
+        <h1 data-i18n="portal.profile.title">Mi perfil</h1>
+        <p data-i18n="portal.profile.subtitle">Información de tu cuenta.</p>
       </div>
       <div class="profile-card">
         <div class="profile-avatar" id="profile-avatar">?</div>
         <div class="profile-info">
           <div class="profile-field">
-            <label>Nombre</label>
+            <label data-i18n="portal.profile.name">Nombre</label>
             <span id="profile-name">—</span>
           </div>
           <div class="profile-field">
-            <label>Email</label>
+            <label data-i18n="portal.profile.email">Email</label>
             <span id="profile-email">—</span>
           </div>
           <div class="profile-field">
-            <label>Rol</label>
+            <label data-i18n="portal.profile.role">Rol</label>
             <span>CLIENT</span>
           </div>
-          <div class="profile-field">az
-            <label>Miembro desde</label>
+          <div class="profile-field">
+            <label data-i18n="portal.profile.since">Miembro desde</label>
             <span id="profile-since">—</span>
           </div>
         </div>
