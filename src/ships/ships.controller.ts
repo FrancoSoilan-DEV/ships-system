@@ -1,35 +1,68 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
 import { ShipsService } from './ships.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { ShipStatus } from '@prisma/client';
 
-/**
- * ShipsController maneja las rutas de barcos.
- * 
- * GET /api/ships/available  → barcos disponibles (clientes)
- * GET /api/ships            → todos los barcos (admins)
- * GET /api/ships/:id        → detalle de un barco
- */
 @Controller('ships')
 export class ShipsController {
   constructor(private readonly shipsService: ShipsService) {}
 
-  // Público para clientes logueados
+  // GET /api/ships/available → clientes logueados
   @UseGuards(JwtAuthGuard)
   @Get('available')
   findAvailable() {
     return this.shipsService.findAvailable();
   }
 
-  // Para admins y superadmins
-  @UseGuards(JwtAuthGuard)
+  // GET /api/ships/stats → solo admins
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPERADMIN')
+  @Get('stats')
+  getStats() {
+    return this.shipsService.getStats();
+  }
+
+  // GET /api/ships → solo admins
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPERADMIN')
   @Get()
   findAll() {
     return this.shipsService.findAll();
   }
 
+  // GET /api/ships/:id → cualquier usuario logueado
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.shipsService.findOne(id);
+  }
+
+  // PATCH /api/ships/:id → solo admins
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPERADMIN')
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() body: { name?: string; status?: ShipStatus; basePrice?: number },
+  ) {
+    return this.shipsService.update(id, body);
+  }
+
+  // dentro del controller:
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPERADMIN')
+  @Post()
+  create(@Body() body: {
+    name: string;
+    flag: string;
+    type: string;
+    yearBuilt: number;
+    capacityTeu: number;
+    maxWeightTons: number;
+    basePrice: number;
+  }) {
+    return this.shipsService.create(body);
   }
 }

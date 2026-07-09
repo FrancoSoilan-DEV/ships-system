@@ -1,18 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ShipStatus } from '@prisma/client';
 
-/**
- * ShipsService maneja toda la lógica de negocio de barcos.
- * Por ahora solo lectura — el admin podrá crear/editar más adelante.
- */
 @Injectable()
 export class ShipsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Todos los barcos disponibles (para clientes)
   async findAvailable() {
     return this.prisma.ship.findMany({
-      where: { status: 'AVAILABLE' },
+      where: { status: ShipStatus.AVAILABLE },
       orderBy: { basePrice: 'asc' },
       select: {
         id: true,
@@ -29,7 +26,6 @@ export class ShipsService {
     });
   }
 
-  // Todos los barcos (para admins)
   async findAll() {
     return this.prisma.ship.findMany({
       orderBy: { createdAt: 'desc' },
@@ -42,7 +38,6 @@ export class ShipsService {
     });
   }
 
-  // Un barco por ID
   async findOne(id: string) {
     return this.prisma.ship.findUnique({
       where: { id },
@@ -52,6 +47,51 @@ export class ShipsService {
         },
         crew: true,
         _count: { select: { voyages: true } },
+      },
+    });
+  }
+
+  async update(id: string, data: {
+    name?: string;
+    status?: ShipStatus;
+    basePrice?: number;
+  }) {
+    return this.prisma.ship.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async getStats() {
+    const [total, available, maintenance, inVoyage] = await Promise.all([
+      this.prisma.ship.count(),
+      this.prisma.ship.count({ where: { status: ShipStatus.AVAILABLE } }),
+      this.prisma.ship.count({ where: { status: ShipStatus.MAINTENANCE } }),
+      this.prisma.ship.count({ where: { status: ShipStatus.ON_VOYAGE } }),
+    ]);
+
+    return { total, available, maintenance, onVoyage: inVoyage };
+  }
+
+  async create(data: {
+    name: string;
+    flag: string;
+    type: string;
+    yearBuilt: number;
+    capacityTeu: number;
+    maxWeightTons: number;
+    basePrice: number;
+  }) {
+    return this.prisma.ship.create({
+      data: {
+        name: data.name,
+        flag: data.flag,
+        type: data.type as any,
+        yearBuilt: data.yearBuilt,
+        capacityTeu: data.capacityTeu,
+        maxWeightTons: data.maxWeightTons,
+        basePrice: data.basePrice,
+        totalNauticalMiles: 0,
       },
     });
   }

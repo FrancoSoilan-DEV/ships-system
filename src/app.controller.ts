@@ -1,15 +1,14 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { RolesGuard } from './auth/guards/roles.guard';
+import { Roles } from './auth/decorators/roles.decorator';
 
-/**
- * AppController expone endpoints públicos de estadísticas
- * para que la landing page muestre datos reales de la DB.
- */
 @Controller()
 export class AppController {
   constructor(private readonly prisma: PrismaService) {}
 
-  // GET /api/stats
+  // GET /api/stats → público, para la landing
   @Get('stats')
   async getStats() {
     const [totalShips, availableShips, totalVoyages, featuredShip] = await Promise.all([
@@ -30,11 +29,16 @@ export class AppController {
       }),
     ]);
 
-    return {
-      totalShips,
-      availableShips,
-      activeVoyages: totalVoyages,
-      featuredShip,
-    };
+    return { totalShips, availableShips, activeVoyages: totalVoyages, featuredShip };
+  }
+
+  // GET /api/escalations → solo admins
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPERADMIN')
+  @Get('escalations')
+  async getEscalations() {
+    return this.prisma.escalationJob.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }

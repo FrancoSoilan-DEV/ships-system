@@ -23,12 +23,8 @@ export class VoyagesService {
   };
 
   async findMyVoyages(userId: string) {
-    const client = await this.prisma.client.findUnique({
-      where: { userId },
-    });
-
+    const client = await this.prisma.client.findUnique({ where: { userId } });
     if (!client) return [];
-
     return this.prisma.voyage.findMany({
       where: { clientId: client.id },
       orderBy: { createdAt: 'desc' },
@@ -39,6 +35,39 @@ export class VoyagesService {
     });
   }
 
+  async findAll() {
+    return this.prisma.voyage.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        ship: { select: { name: true, type: true } },
+        client: { include: { user: { select: { name: true, email: true } } } },
+        cargo: true,
+      },
+    });
+  }
+
+  async getStats() {
+    const [total, scheduled, inProgress, completed] = await Promise.all([
+      this.prisma.voyage.count(),
+      this.prisma.voyage.count({ where: { status: 'SCHEDULED' } }),
+      this.prisma.voyage.count({ where: { status: 'IN_PROGRESS' } }),
+      this.prisma.voyage.count({ where: { status: 'COMPLETED' } }),
+    ]);
+
+    const revenue = await this.prisma.voyage.aggregate({
+      _sum: { finalCost: true },
+      where: { status: 'COMPLETED' },
+    });
+
+    return {
+      total,
+      scheduled,
+      inProgress,
+      completed,
+      totalRevenue: revenue._sum.finalCost ?? 0,
+    };
+  }
+
   async quote(params: {
     shipId: string;
     cargoType: string;
@@ -47,10 +76,7 @@ export class VoyagesService {
     destination: string;
     distanceKm: number;
   }) {
-    const ship = await this.prisma.ship.findUnique({
-      where: { id: params.shipId },
-    });
-
+    const ship = await this.prisma.ship.findUnique({ where: { id: params.shipId } });
     if (!ship) throw new BadRequestException('Barco no encontrado');
     if (ship.status !== 'AVAILABLE') throw new BadRequestException('El barco no está disponible');
 
@@ -60,21 +86,16 @@ export class VoyagesService {
     const finalCost          = ship.basePrice * params.durationDays * shipMultiplier * cargoMultiplier * distanceMultiplier;
 
     return {
-      ship: {
-        id:        ship.id,
-        name:      ship.name,
-        type:      ship.type,
-        basePrice: ship.basePrice,
-      },
-      durationDays:        params.durationDays,
-      cargoType:           params.cargoType,
-      origin:              params.origin,
-      destination:         params.destination,
-      distanceKm:          params.distanceKm,
+      ship: { id: ship.id, name: ship.name, type: ship.type, basePrice: ship.basePrice },
+      durationDays:       params.durationDays,
+      cargoType:          params.cargoType,
+      origin:             params.origin,
+      destination:        params.destination,
+      distanceKm:         params.distanceKm,
       shipMultiplier,
       cargoMultiplier,
-      distanceMultiplier:  Math.round(distanceMultiplier * 100) / 100,
-      finalCost:           Math.round(finalCost * 100) / 100,
+      distanceMultiplier: Math.round(distanceMultiplier * 100) / 100,
+      finalCost:          Math.round(finalCost * 100) / 100,
     };
   }
 
@@ -109,10 +130,8 @@ export class VoyagesService {
     const arrivalAt   = new Date(departureAt);
     arrivalAt.setDate(arrivalAt.getDate() + params.durationDays);
 
-    
-    const shipTypeEnum  = quote.ship.type  as any;
-    
-    const cargoTypeEnum = params.cargoType as any;
+    const shipTypeEnum  = quote.ship.type    as any;
+    const cargoTypeEnum = params.cargoType   as any;
 
     let tariff = await this.prisma.tariff.findFirst({
       where: { shipType: shipTypeEnum, cargoType: cargoTypeEnum },
@@ -153,7 +172,6 @@ export class VoyagesService {
 
     await this.prisma.cargo.create({
       data: {
-        
         type:       params.cargoType as any,
         weightTons: params.weightTons,
         teuCount:   0,
