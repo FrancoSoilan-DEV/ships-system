@@ -851,3 +851,18 @@
   margin: 1rem 0 0.5rem;
   color: var(--text);
 }
+
+/* ── SUPERADMIN ESPECÍFICO ──────────────────────────────────── */
+.superadmin-badge { background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.3); color: #a78bfa; }
+
+.role-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.role-superadmin { background: rgba(167,139,250,0.1); color: #a78bfa; }
+.role-admin      { background: rgba(251,191,36,0.1);  color: #fbbf24; }
+.role-captain    { background: rgba(74,222,128,0.1);  color: #4ade80; }
+.role-client     { background: rgba(56,189,248,0.1);  color: var(--accent); }

@@ -58,4 +58,31 @@ export class UsersService {
 
     return { total, clients, captains, admins };
   }
+
+  async findCaptains() {
+    return this.prisma.user.findMany({
+      where: { role: 'CAPTAIN' },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isActive: true,
+        createdAt: true,
+        captain: {
+          select: {
+            licenseNumber: true,
+            ship: { select: { name: true, type: true } },
+          },
+        },
+      },
+    });
+  }
+
+  async toggleActive(id: string, isActive: boolean) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { isActive },
+    });
+  }
 }

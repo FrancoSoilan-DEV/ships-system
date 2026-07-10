@@ -1,400 +1,398 @@
-<div align="center">
-  <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=120&color=gradient&customColorList=6,14,30&reversal=true&text=ships-system&fontColor=ffffff&fontSize=52&fontAlignY=35&desc=NestJS%20%7C%20TypeScript%20%7C%20PostgreSQL%20%7C%20Prisma%20%7C%20WebSockets%20%7C%20AI%20Agent&descAlignY=58&descSize=16" />
-</div>
+# ⚓ Ships System
 
-<p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com/?lines=Maritime+Fleet+Management+System;NestJS+Microservices+%2B+TypeScript;AI+Agent+with+Tool+Use+(Anthropic);Real-time+Chat+%2B+WebSockets;JWT+Auth+%2B+Role-based+Access+Control;Fully+Dockerized+%E2%80%94+One+Command+Setup&center=true&width=850&height=40&color=0EA5E9">
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white"/>
-  <img src="https://img.shields.io/badge/NestJS-10.x-E0234E?style=for-the-badge&logo=nestjs&logoColor=white"/>
-  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Prisma-5.x-2D3748?style=for-the-badge&logo=prisma&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis&logoColor=white"/>
-  <img src="https://img.shields.io/badge/BullMQ-Queues-FF6B35?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/Socket.io-WebSockets-010101?style=for-the-badge&logo=socket.io&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Anthropic-AI%20Agent-6B46C1?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/JWT-Auth-F7B731?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white"/>
-</p>
+Sistema de gestión de flota marítima construido con **NestJS** como proyecto de aprendizaje didáctico. El sistema cubre el flujo completo desde una landing page pública con agente IA, hasta portales diferenciados por rol con autenticación JWT.
 
 ---
 
-## Table of Contents
+## 🧠 Concepto del sistema
 
-- [Overview](#overview)
-- [Core Features](#core-features)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Project Structure](#project-structure)
-- [Roles and Permissions](#roles-and-permissions)
-- [AI Agent — How it works](#ai-agent--how-it-works)
-- [Database Models](#database-models)
-- [API Endpoints](#api-endpoints)
-- [WebSocket Events](#websocket-events)
-- [Queue Jobs](#queue-jobs)
-- [Docker Setup](#docker-setup)
-- [Environment Variables](#environment-variables)
-- [Default Users](#default-users)
-- [Useful Commands](#useful-commands)
+Un visitante llega a la landing, habla con el agente IA (Groq/llama-3.3-70b), obtiene cotizaciones, y la IA crea su cuenta automáticamente. Luego inicia sesión y accede a su portal según su rol. Los admins gestionan barcos, viajes y clientes. Los capitanes ven su barco y tripulación. El superadmin tiene control total del sistema.
 
----
-
-## Overview
-
-**ships-system** is a fullstack maritime fleet management platform built with **NestJS microservices** and **TypeScript**. It is designed to manage a shipping company's entire operation: vessels, crews, voyages, cargo, maintenance, and client interactions.
-
-The system combines a **public landing page**, a **role-based admin panel**, a **captain portal**, and a **client portal powered by an AI agent** — all communicating in real time via WebSockets.
-
-The standout feature is an **AI agent built on Anthropic's API with tool use**: it attends potential clients, explains available ships and pricing, calculates voyage costs, and autonomously creates client accounts when the user is ready to book. When a case exceeds the agent's scope, it escalates the conversation to a human admin through a BullMQ queue, handing off the chat seamlessly.
-
----
-
-## Core Features
-
-- **Public landing page** with company overview and login entry point
-- **JWT authentication** with role-based guards across four user types
-- **Fleet management** — ships, availability status, capacity, maintenance tracking
-- **Crew management** — crew members assigned per ship with roles
-- **Voyage management** — origin, destination, duration-based pricing, cargo tracking
-- **Real-time tracking** — live ship status updates via WebSockets
-- **AI agent** — conversational client onboarding with Anthropic tool use
-  - Answers questions about available ships, routes, and pricing
-  - Calculates voyage cost based on destination and days
-  - Creates client accounts autonomously when the user decides to book
-  - Escalates to a human admin when case complexity requires it
-- **Real-time chat** — admin ↔ client, admin ↔ captain via WebSockets
-- **Chat history** — superadmin can review all AI conversations and human chats
-- **BullMQ queues** — escalation jobs, maintenance alerts, report generation
-- **Fully Dockerized** — one command to run the entire stack
-
----
-
-## Tech Stack
-
-<p align="left">
-  <img src="https://skillicons.dev/icons?i=ts,nodejs,nestjs,postgres,prisma,redis,docker,github" />
-</p>
-
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js 20 |
-| Language | TypeScript 5 |
-| Framework | NestJS 10 (monorepo) |
-| ORM | Prisma 5 |
-| Database | PostgreSQL 16 |
-| Cache / Broker | Redis 7 |
-| Job Queues | BullMQ via @nestjs/bull |
-| Real-time | Socket.io via @nestjs/websockets |
-| AI Agent | Anthropic Claude API (tool use) |
-| Authentication | JWT via @nestjs/jwt + Passport |
-| Containerization | Docker + Docker Compose |
-| Testing | Jest (unit) + Supertest (e2e) |
-| CI/CD | GitHub Actions |
-
----
-
-## Architecture
-
-```text
-Public browser
-  │
-  ├── Landing page   (static — company info + login button)
-  └── Login / portal (JWT-authenticated SPA or SSR)
-        │
-        ▼
-  API Gateway (NestJS)
-  ├── Auth guard (JWT + role check)
-  ├── Rate limiting
-  └── Routes to microservices via TCP
-        │
-        ├── ships-service       → fleet CRUD, status, specs, maintenance
-        ├── crew-service        → crew members, assignments per ship
-        ├── voyage-service      → voyages, pricing, cargo, history
-        ├── maintenance-service → maintenance records, alerts
-        ├── reports-service     → stats, exports
-        ├── chat-service        → WebSocket gateway, real-time messaging
-        └── ai-agent-service    → Anthropic tool-use agent, account creation,
-                                   escalation to human admin
-        │
-        ▼
-  Redis (BullMQ queues)
-  ├── escalation-queue    → AI → human admin handoff
-  ├── maintenance-alerts  → scheduled maintenance notifications
-  └── reports-queue       → async report generation
-        │
-        ▼
-  PostgreSQL (Prisma ORM)
 ```
-
-### Escalation flow
-
-```text
-Visitor → AI agent chat
-    │
-    ├── Agent answers, quotes, creates account
-    │
-    └── Complex case detected
-          │
-          ▼
-    Job pushed to escalation-queue (BullMQ)
-          │
-          ▼
-    Available admin notified (WebSocket event)
-          │
-          ▼
-    Admin takes over chat in real time
-          │
-          ▼
-    Full conversation saved to DB (visible to SUPERADMIN)
+Landing → Chat IA → Crea cuenta → Login → Portal por rol
 ```
 
 ---
 
-## Project Structure
+## 🛠️ Stack técnico
 
-```text
+| Capa | Tecnología |
+|------|-----------|
+| Framework backend | NestJS 11 (TypeScript) |
+| ORM | Prisma 5.22 |
+| Base de datos | PostgreSQL 16 |
+| Autenticación | JWT (access 15min + refresh 7d) + Passport |
+| Estrategias | passport-jwt (jwt + jwt-refresh) |
+| IA | Groq API — llama-3.3-70b-versatile (tool use) |
+| Hash passwords | bcryptjs |
+| Frontend | HTML / CSS / JS vanilla + i18n ES/EN |
+| Serving frontend | ServeStaticModule de NestJS |
+| Contenedores | Docker + Docker Compose |
+| Package manager | pnpm |
+
+---
+
+## 🏗️ Estructura del proyecto
+
+```
 ships-system/
-│
-├── apps/
-│   ├── api-gateway/              ← Entry point, routing, auth guards
-│   ├── ships-service/            ← Fleet management microservice
-│   ├── crew-service/             ← Crew management microservice
-│   ├── voyage-service/           ← Voyage and pricing microservice
-│   ├── maintenance-service/      ← Maintenance records and alerts
-│   ├── reports-service/          ← Stats and export microservice
-│   ├── chat-service/             ← WebSocket gateway, message persistence
-│   └── ai-agent-service/         ← Anthropic agent, tool definitions, escalation
-│
-├── libs/
-│   ├── common/                   ← Shared DTOs, guards, interceptors, decorators
-│   ├── prisma/                   ← Shared Prisma client
-│   └── contracts/                ← Message patterns between microservices
-│
 ├── prisma/
-│   └── schema.prisma             ← All database models
-│
-├── .github/
-│   └── workflows/
-│       └── ci.yml                ← GitHub Actions pipeline
-│
-├── docker-compose.yml
-├── nest-cli.json                 ← Monorepo configuration
-└── package.json
+│   ├── schema.prisma          # Modelos, enums y relaciones
+│   └── seed.ts                # Datos de prueba completos
+├── public/                    # Frontend servido por NestJS
+│   ├── index.html             # Landing page con chat IA
+│   ├── login.html             # Login (sin registro manual)
+│   ├── portal/
+│   │   ├── client.html        # Portal CLIENT
+│   │   ├── admin.html         # Portal ADMIN
+│   │   ├── captain.html       # Portal CAPTAIN
+│   │   └── superadmin.html    # Portal SUPERADMIN
+│   ├── css/
+│   │   ├── style.css          # Estilos globales (dark theme)
+│   │   └── portal.css         # Estilos portales + modales
+│   └── js/
+│       ├── i18n.js            # Sistema de traducciones ES/EN
+│       ├── main.js            # Landing: chat widget + IA
+│       ├── auth.js            # Login + redirección por rol
+│       ├── portal.js          # Lógica compartida portales (auth, nav, logout)
+│       ├── client.js          # Portal cliente (flota, cotizador, viajes, soporte)
+│       ├── admin.js           # Portal admin (barcos, viajes, clientes, escalaciones)
+│       ├── captain.js         # Portal capitán (barco, viajes, tripulación)
+│       └── superadmin.js      # Portal superadmin (usuarios, capitanes)
+└── src/
+    ├── ai-agent/              # Agente IA con Groq + tool use
+    │   ├── tools/
+    │   │   ├── get-available-ships.tool.ts
+    │   │   ├── get-voyage-pricing.tool.ts
+    │   │   ├── get-destination-options.tool.ts
+    │   │   ├── create-client-account.tool.ts
+    │   │   └── escalate-to-admin.tool.ts
+    │   ├── ai-agent.controller.ts   # POST /api/ai-agent/chat | /support
+    │   ├── ai-agent.service.ts      # runChat() compartido, chat() y supportChat()
+    │   └── ai-agent.module.ts
+    ├── auth/
+    │   ├── dto/
+    │   │   ├── login.dto.ts
+    │   │   └── register.dto.ts
+    │   ├── guards/
+    │   │   ├── jwt-auth.guard.ts    # Extiende AuthGuard('jwt')
+    │   │   └── roles.guard.ts       # Verifica rol del usuario
+    │   ├── strategies/
+    │   │   ├── jwt.strategy.ts      # Valida access token
+    │   │   └── jwt-refresh.strategy.ts  # Valida refresh token
+    │   ├── decorators/
+    │   │   └── roles.decorator.ts   # @Roles('ADMIN', ...)
+    │   ├── auth.controller.ts       # register, login, refresh
+    │   ├── auth.service.ts          # bcrypt, JWT sign, generateTokens()
+    │   └── auth.module.ts
+    ├── ships/
+    │   ├── ships.controller.ts      # CRUD + stats + findMyCaptainShip
+    │   ├── ships.service.ts         # findAvailable, findAll, findOne, update, create, findByCaptain, getStats
+    │   └── ships.module.ts
+    ├── voyages/
+    │   ├── voyages.controller.ts    # my, stats, all, quote, create, ship/:id
+    │   ├── voyages.service.ts       # findMyVoyages, findAll, getStats, quote, create, findByShip
+    │   └── voyages.module.ts
+    ├── users/
+    │   ├── users.controller.ts      # me, stats, clients, captains, all, toggle
+    │   ├── users.service.ts         # findByEmail, findById, findAll, findClients, findCaptains, getStats, toggleActive
+    │   └── users.module.ts
+    ├── prisma/
+    │   ├── prisma.service.ts        # Extiende PrismaClient, OnModuleInit/Destroy
+    │   └── prisma.module.ts         # @Global()
+    ├── chat/                        # WebSocket gateway (pendiente)
+    ├── queues/                      # BullMQ escalation (pendiente)
+    ├── crew/                        # Gestión de tripulación (pendiente)
+    ├── maintenance/                 # Mantenimiento de barcos (pendiente)
+    ├── common/                      # Guards, interceptors, pipes globales (pendiente)
+    ├── app.controller.ts            # GET /api/stats (público) + GET /api/escalations (admin)
+    ├── app.module.ts                # ConfigModule, ServeStaticModule, todos los módulos
+    ├── app.service.ts
+    └── main.ts                      # globalPrefix 'api', listen 3000
 ```
 
 ---
 
-## Roles and Permissions
+## 👤 Roles y permisos
 
-| Resource | SUPERADMIN | ADMIN | CAPTAIN | CLIENT |
-|---|---|---|---|---|
-| View all users | ✅ | ❌ | ❌ | ❌ |
-| Manage users | ✅ | ✅ | ❌ | ❌ |
-| Delete users | ✅ | ❌ | ❌ | ❌ |
-| View fleet (all ships) | ✅ | ✅ | own ship | available only |
-| Manage fleet | ✅ | ✅ | ❌ | ❌ |
-| View crew | ✅ | ✅ | own ship | ❌ |
-| Manage crew | ✅ | ✅ | ❌ | ❌ |
-| Create voyages | ✅ | ✅ | ❌ | ❌ |
-| View voyage history | ✅ | ✅ | own ship | own voyages |
-| View maintenance records | ✅ | ✅ | own ship | ❌ |
-| Chat with admin | ✅ | ✅ | ✅ | ✅ |
-| Chat with captain | ✅ | ✅ | ✅ | ❌ |
-| View AI chat history | ✅ | ❌ | ❌ | ❌ |
-| View all conversations | ✅ | ❌ | ❌ | ❌ |
-| Manage tariffs | ✅ | ✅ | ❌ | ❌ |
-| View reports | ✅ | ✅ | ❌ | ❌ |
+| Rol | Acceso | Portal |
+|-----|--------|--------|
+| `CLIENT` | Explorar flota, cotizar, contratar viajes, historial, soporte IA | `/portal/client.html` |
+| `CAPTAIN` | Ver su barco asignado, viajes de su barco, tripulación | `/portal/captain.html` |
+| `ADMIN` | Gestión de barcos (crear/editar), viajes, clientes, escalaciones | `/portal/admin.html` |
+| `SUPERADMIN` | Todo lo del ADMIN + gestión de todos los usuarios y capitanes | `/portal/superadmin.html` |
 
 ---
 
-## AI Agent — How it works
+## 🤖 Agente de IA — Tools disponibles
 
-The AI agent is built on **Anthropic's Claude API with tool use**. It runs as a standalone NestJS microservice (`ai-agent-service`) and exposes a WebSocket channel for unauthenticated visitors.
+El agente usa **Groq** (gratuito) con `llama-3.3-70b-versatile` y pattern de tool use:
 
-### Tools available to the agent
+| Tool | Descripción | Disponible en |
+|------|-------------|---------------|
+| `getAvailableShips` | Lista barcos con status AVAILABLE desde la DB | chat + support |
+| `getVoyagePricing` | Calcula cotización con multiplicadores | chat + support |
+| `getDestinationOptions` | Retorna rutas disponibles (estático) | chat + support |
+| `createClientAccount` | Crea usuario CLIENT + perfil Client en DB | **solo chat** (landing) |
+| `escalateToAdmin` | Crea EscalationJob en DB con status PENDING | chat + support |
 
-| Tool | Description |
-|---|---|
-| `get_available_ships` | Returns list of ships available for booking with capacity and specs |
-| `get_voyage_pricing` | Calculates cost based on destination country and voyage duration in days |
-| `get_destination_options` | Returns available destination countries and routes |
-| `create_client_account` | Creates a CLIENT user account and returns credentials |
-| `escalate_to_admin` | Pushes an escalation job to BullMQ and notifies available admins |
+**Dos endpoints diferenciados:**
+- `POST /api/ai-agent/chat` — público, para visitantes en la landing. Puede crear cuentas.
+- `POST /api/ai-agent/support` — requiere JWT, para clientes logueados. NO crea cuentas.
 
-### Agent conversation flow
-
-```text
-1. Visitor opens landing page → starts chat with AI agent (no login required)
-2. Agent presents available ships, answers questions about routes and pricing
-3. Client selects a ship and destination → agent calculates voyage cost
-4. Client decides to book → agent creates account (email + temp password)
-5. Client receives credentials → logs in → sees their portal
-6. If at any point the visitor needs human help → agent escalates to admin
-7. SUPERADMIN can review the full AI conversation history at any time
+**Fórmula de precio:**
+```
+finalCost = basePrice × durationDays × shipTypeMultiplier × cargoMultiplier × distanceMultiplier
+distanceMultiplier = 1 + (distanceKm / 10000)
 ```
 
-### Escalation criteria (handled by the agent)
+---
 
-- Client explicitly asks to speak with a human
-- Complaint or claim about an existing voyage
-- Request outside the agent's defined tool scope
-- Repeated misunderstanding after 3 attempts
+## 🌐 Sistema de i18n (ES/EN)
+
+El frontend usa un sistema propio de traducción en `public/js/i18n.js`:
+
+- Objeto `translations` con claves en `es` y `en`
+- Función `t(key)` retorna el texto en el idioma actual
+- Atributo `data-i18n="clave"` en elementos HTML para traducción automática
+- Atributo `data-i18n-placeholder="clave"` para inputs
+- `data-portal="true"` en el `<body>` de los portales para diferenciarlo de la landing
+- `portal.js` clona el botón de idioma para evitar listeners duplicados con `i18n.js`
+- Al cambiar idioma en el portal, se re-renderiza la grilla de barcos (`window.allShips` es global)
 
 ---
 
-## Database Models
+## 📡 API Endpoints
 
-> Models will be detailed here as the schema is finalized during development.
+### Auth
+```
+POST /api/auth/register          Registro (usado internamente por la IA)
+POST /api/auth/login             Login → { accessToken, refreshToken }
+POST /api/auth/refresh           Refresh token → nuevos tokens
+```
 
-| Model | Description |
-|---|---|
-| `User` | System user — linked to a role (SUPERADMIN, ADMIN, CAPTAIN, CLIENT) |
-| `Ship` | Vessel in the fleet — specs, status, capacity, maintenance |
-| `CrewMember` | Crew assigned to a ship |
-| `Voyage` | A transport job — origin, destination, duration, cost, cargo |
-| `Cargo` | Cargo details per voyage |
-| `Tariff` | Pricing rules — destination country, duration range, multiplier |
-| `Maintenance` | Maintenance record per ship |
-| `ChatSession` | A conversation session (AI or human) |
-| `ChatMessage` | Individual message in a session |
-| `EscalationJob` | Record of AI → human escalation events |
+### General (AppController)
+```
+GET  /api/stats                  Estadísticas públicas para la landing
+GET  /api/escalations            Escalaciones de IA (ADMIN+)
+```
 
----
+### Ships
+```
+GET  /api/ships/available        Barcos disponibles (cualquier user logueado)
+GET  /api/ships/stats            Estadísticas de flota (ADMIN+)
+GET  /api/ships/my               Barco asignado al capitán logueado (CAPTAIN)
+GET  /api/ships                  Todos los barcos con capitán y conteos (ADMIN+)
+GET  /api/ships/:id              Detalle de un barco (cualquier user logueado)
+POST /api/ships                  Crear barco (ADMIN+)
+PATCH /api/ships/:id             Editar nombre, status, basePrice (ADMIN+)
+```
 
-## WebSocket Events
+### Voyages
+```
+GET  /api/voyages/my             Viajes del cliente logueado (CLIENT)
+GET  /api/voyages/stats          Estadísticas de viajes + revenue (ADMIN+)
+GET  /api/voyages/ship/:shipId   Viajes de un barco (CAPTAIN, ADMIN+)
+GET  /api/voyages                Todos los viajes con cliente y cargo (ADMIN+)
+POST /api/voyages/quote          Calcular cotización sin crear viaje (cualquier user)
+POST /api/voyages                Contratar viaje — crea voyage + cargo + tariff (CLIENT)
+```
 
-> Full event list will be added as the chat-service is built.
+### Users
+```
+GET  /api/users/me               Perfil del usuario logueado
+GET  /api/users/stats            Conteo por rol (ADMIN+)
+GET  /api/users/clients          Lista clientes con métricas (ADMIN+)
+GET  /api/users/captains         Lista capitanes con licencia y barco (SUPERADMIN)
+GET  /api/users                  Todos los usuarios (SUPERADMIN)
+PATCH /api/users/:id/toggle      Activar/desactivar usuario (SUPERADMIN)
+```
 
-| Event | Direction | Description |
-|---|---|---|
-| `agent:message` | server → client | AI agent response |
-| `agent:escalate` | server → admin | Escalation notification |
-| `chat:message` | bidirectional | Real-time chat message |
-| `chat:join` | client → server | Join a chat room |
-| `ship:status_update` | server → client | Live ship status change |
-| `voyage:update` | server → client | Voyage progress event |
-
----
-
-## Queue Jobs
-
-| Queue | Job | Description |
-|---|---|---|
-| `escalation-queue` | `handle-escalation` | Notify admin, transfer chat context |
-| `maintenance-alerts` | `send-alert` | Alert admin when maintenance is due |
-| `reports-queue` | `generate-report` | Async fleet or voyage report export |
-
----
-
-## Docker Setup
-
-| Container | Image | Port | Purpose |
-|---|---|---|---|
-| `api-gateway` | node:20-alpine | 3000 | NestJS API Gateway |
-| `ai-agent-service` | node:20-alpine | 3001 | AI agent microservice |
-| `chat-service` | node:20-alpine | 3002 | WebSocket chat service |
-| `ships-db` | postgres:16-alpine | 5432 | PostgreSQL database |
-| `ships-redis` | redis:7-alpine | 6379 | Redis for BullMQ |
-| `bull-board` | — | 3010 | BullMQ dashboard UI |
+### AI Agent
+```
+POST /api/ai-agent/chat          Chat público — puede crear cuentas (sin auth)
+POST /api/ai-agent/support       Chat soporte — NO crea cuentas (CLIENT logueado)
+```
 
 ---
 
-## Environment Variables
+## 📦 Tipos de barcos y multiplicadores
 
-> Full `.env.example` will be added when each service is scaffolded.
+| Tipo (enum) | Descripción | Multiplicador |
+|-------------|-------------|---------------|
+| `CONTAINER` | Portacontenedores | ×1.0 |
+| `BULK_CARRIER` | Granelero | ×1.1 |
+| `TANKER` | Buque tanque | ×1.3 |
+| `REEFER` | Buque frigorífico | ×1.5 |
+| `HEAVY_LIFT` | Carga pesada | ×1.8 |
 
-| Variable | Description |
-|---|---|
-| `PORT` | API Gateway port |
-| `DATABASE_URL` | PostgreSQL connection string |
-| `REDIS_URL` | Redis connection string |
-| `JWT_SECRET` | Secret for signing JWT tokens |
-| `JWT_REFRESH_SECRET` | Secret for refresh tokens |
-| `ANTHROPIC_API_KEY` | Anthropic Claude API key for the AI agent |
-| `POSTGRES_USER` | PostgreSQL username |
-| `POSTGRES_PASSWORD` | PostgreSQL password |
-| `POSTGRES_DB` | PostgreSQL database name |
+## 📦 Tipos de carga y multiplicadores
 
-> [!WARNING]
-> Never commit your real `.env` file. Use `.env.example` to document required variables.
-
----
-
-## Default Users
-
-> Seed data will be defined once the schema is finalized.
-
-| Role | Email | Password |
-|---|---|---|
-| Superadmin | `superadmin@ships-system.com` | `super123` |
-| Admin | `admin@ships-system.com` | `admin123` |
-| Captain | `captain@ships-system.com` | `captain123` |
-| Client | `client@ships-system.com` | `client123` |
-
-> [!WARNING]
-> Change all default passwords after first login, especially the Superadmin account.
+| Tipo (enum) | Descripción | Multiplicador |
+|-------------|-------------|---------------|
+| `GENERAL` | Carga general | ×1.0 |
+| `BULK` | A granel | ×1.1 |
+| `REFRIGERATED` | Refrigerada | ×1.4 |
+| `HAZARDOUS` | Peligrosa | ×1.6 |
+| `OVERSIZED` | Sobredimensionada | ×2.0 |
 
 ---
 
-## Useful Commands
+## 🚀 Instalación y desarrollo
+
+### Prerrequisitos
+- Node.js 20+
+- pnpm
+- Docker + Docker Compose
+
+### 1. Clonar el repositorio
+```bash
+git clone <repo-url>
+cd ships-system
+```
+
+### 2. Variables de entorno
+```bash
+cp .env.example .env
+```
+
+Editá el `.env`:
+```env
+# Base de datos (local, para referencia)
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ships_system
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=ships_system
+
+# JWT
+JWT_SECRET=tu_jwt_secret_aqui
+JWT_REFRESH_SECRET=tu_refresh_secret_aqui
+
+# IA — Groq (gratuito en console.groq.com)
+GROQ_API_KEY=gsk_...
+```
+
+### 3. Instalar dependencias
+```bash
+pnpm install
+```
+
+### 4. Levantar todo con Docker
+```bash
+docker compose up --build
+```
+
+> ⚠️ **En Windows, Prisma no puede leer variables de entorno fuera de Docker.** El único flujo de desarrollo válido es `docker compose up --build`. Nunca corras `prisma` directamente en PowerShell.
+
+### 5. Sincronizar el schema con la DB
+```bash
+docker compose exec app npx prisma db push
+```
+
+### 6. Cargar datos de prueba
+```bash
+docker compose exec app npx prisma db seed
+```
+
+---
+
+## 🔑 Usuarios de prueba (seed)
+
+| Email | Password | Rol |
+|-------|----------|-----|
+| `superadmin@ships.com` | `super123` | SUPERADMIN |
+| `admin@ships.com` | `admin123` | ADMIN |
+| `captain@ships.com` | `captain123` | CAPTAIN (barco: MV Asunción Star) |
+| `captain2@ships.com` | `captain456` | CAPTAIN (barco: MV Paraná Trader) |
+| `client@ships.com` | `client123` | CLIENT |
+| `maria@ships.com` | `client456` | CLIENT |
+| `carlos@ships.com` | `client789` | CLIENT |
+
+---
+
+## 🌐 URLs del sistema
+
+| URL | Descripción |
+|-----|-------------|
+| `http://localhost:3000` | Landing page con chat IA |
+| `http://localhost:3000/login.html` | Login |
+| `http://localhost:3000/portal/client.html` | Portal cliente |
+| `http://localhost:3000/portal/admin.html` | Portal admin |
+| `http://localhost:3000/portal/captain.html` | Portal capitán |
+| `http://localhost:3000/portal/superadmin.html` | Portal superadmin |
+
+---
+
+## 🐳 Comandos Docker útiles
 
 ```bash
-# Start full stack
+# Levantar todo (comando principal de desarrollo)
 docker compose up --build
 
-# Start in detached mode
-docker compose up --build -d
-
-# Stop containers
-docker compose down
-
-# Clean reset (removes volumes)
+# Reset completo — borra la DB
 docker compose down -v
 
-# Run database migrations
-npx prisma migrate dev --name init
+# Rebuild forzado (cuando instalás nuevos paquetes con pnpm)
+docker compose build --no-cache
+docker compose up
 
-# Seed the database
-npm run seed
+# Sincronizar schema Prisma con la DB
+docker compose exec app npx prisma db push
 
-# Open Prisma Studio
-npx prisma studio
+# Correr seed
+docker compose exec app npx prisma db seed
 
-# Run unit tests
-npm run test
+# Ver la DB en Prisma Studio
+docker compose exec app npx prisma studio --port 5555 --browser none
+# Luego abrí http://localhost:5555
 
-# Run e2e tests
-npm run test:e2e
-
-# Run tests with coverage
-npm run test:cov
+# Consultar la DB directamente
+docker compose exec ships-db psql -U postgres -d ships_system -c "SELECT email, role FROM users;"
 ```
 
 ---
 
-## CI/CD Pipeline
+## 📝 Notas importantes de desarrollo
 
-The GitHub Actions pipeline runs on every push to `main` and on all pull requests:
+**Prisma en Windows:** Prisma no puede leer variables de entorno en PowerShell. Todo debe correr dentro de Docker.
 
-```text
-push / PR
-  │
-  ├── Install dependencies
-  ├── Run linter (ESLint)
-  ├── Run unit tests (Jest)
-  ├── Run e2e tests (Supertest)
-  ├── Build TypeScript
-  └── Build Docker image (on main only)
-```
+**Instalar nuevos paquetes:** Instalar con `pnpm add <paquete>` en el host y luego hacer `docker compose build --no-cache` para que Docker tome los nuevos paquetes.
+
+**`pnpm-lock.yaml`:** No debe estar en `.dockerignore`. Si está, Docker falla con `failed to compute cache key`.
+
+**ServeStaticModule:** `AppController` no debe tener `@Get('/')` o pisará el `index.html`.
+
+**i18n en portales:** Los portales usan `data-portal="true"` en el `<body>`. `portal.js` clona el botón `lang-toggle` para remover el listener de `i18n.js` y agregar uno propio que además re-renderiza contenido dinámico.
+
+**`window.allShips`:** La grilla de barcos del portal cliente usa `window.allShips` (global) en vez de variable local para que `portal.js` pueda acceder y re-renderizarla al cambiar idioma.
+
+**Enums del schema:** Los valores correctos son `BULK_CARRIER` (no `BULK`), `HEAVY_LIFT` (no `HEAVY`), `ON_VOYAGE` (no `IN_VOYAGE`).
+
+**ESLint:** Los archivos de `public/` están excluidos del linting TypeScript via `eslint.config.mjs`. Los servicios que usan `as any` para enums de Prisma tienen `/* eslint-disable @typescript-eslint/no-unsafe-assignment */` a nivel de archivo.
 
 ---
 
-<div align="center">
-  <h3>Built with NestJS, TypeScript, Prisma, PostgreSQL, Redis, Socket.io, and Anthropic — from scratch.</h3>
-</div>
+## 🔮 Módulos pendientes
 
-<div align="center">
-  <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=100&color=gradient&customColorList=6,14,30&section=footer" />
-</div>
+Los siguientes módulos están estructurados pero vacíos — trabajo de próxima fase:
+
+- `src/chat/` — WebSocket gateway para chat en tiempo real entre usuarios
+- `src/queues/` — BullMQ para procesamiento de escalaciones
+- `src/crew/` — CRUD de tripulación
+- `src/maintenance/` — CRUD de mantenimiento de barcos
+- `src/common/` — Pipes de validación, interceptors de respuesta, filtros de excepciones
+
+---
+
+## 📚 Lo que aprendiste construyendo esto
+
+- Arquitectura modular de NestJS (módulos, controllers, services, guards, decorators)
+- Inyección de dependencias en NestJS
+- Autenticación JWT con Passport y dos estrategias (access + refresh)
+- Guards personalizados (`JwtAuthGuard`, `RolesGuard`) con `@Roles()` decorator
+- ORM Prisma 5: schema, migraciones, relaciones, enums, `findUnique`, `findMany`, `create`, `update`, `aggregate`
+- Pattern de tool use con modelos de lenguaje (Groq)
+- Servir archivos estáticos desde NestJS con `ServeStaticModule`
+- Docker Compose para desarrollo con múltiples servicios
+- Sistema de i18n vanilla sin librerías externas
+- Manejo de roles en frontend con JWT decoding
