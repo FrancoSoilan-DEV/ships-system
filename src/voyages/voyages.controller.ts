@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, Param } from '@nestjs/common';
 import { VoyagesService } from './voyages.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -67,5 +67,13 @@ export class VoyagesController {
   @Post()
   create(@Body() dto: CreateVoyageDto, @Request() req: RequestWithUser) {
     return this.voyagesService.create(req.user.id, dto);
+  }
+
+  // GET /api/voyages/ship/:shipId → viajes de un barco específico
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('CAPTAIN', 'ADMIN', 'SUPERADMIN')
+  @Get('ship/:shipId')
+  findByShip(@Param('shipId') shipId: string) {
+    return this.voyagesService.findByShip(shipId);
   }
 }

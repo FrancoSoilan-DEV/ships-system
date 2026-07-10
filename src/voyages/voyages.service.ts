@@ -189,4 +189,15 @@ export class VoyagesService {
 
     return voyage;
   }
+  
+  async findByShip(shipId: string) {
+    return this.prisma.voyage.findMany({
+      where: { shipId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        client: { include: { user: { select: { name: true, email: true } } } },
+        cargo: true,
+      },
+    });
+  }
 }

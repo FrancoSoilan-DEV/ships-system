@@ -787,60 +787,67 @@
 @media (max-width: 768px) {
   .stats-grid-5 { grid-template-columns: 1fr 1fr; }
 }
-.admin-modal .modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  z-index: 999;
-}
 
-.admin-modal .modal-card {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+/* ── CAPTAIN ESPECÍFICO ─────────────────────────────────────── */
+.captain-badge { background: rgba(74,222,128,0.1); border-color: rgba(74,222,128,0.3); color: #4ade80; }
+
+.ship-detail-card {
   background: var(--bg3);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 2rem;
-  width: 100%;
-  max-width: 480px;
-  z-index: 1000;
+  max-width: 800px;
 }
 
-.admin-modal .modal-card h2 {
-  font-size: 1.2rem;
-  font-weight: 700;
+.ship-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 1.5rem;
 }
 
-.admin-modal .form-group {
-  margin-bottom: 1rem;
+.ship-detail-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-top: 0.5rem;
 }
 
-.admin-modal .form-group label {
-  display: block;
-  font-size: 0.85rem;
-  color: var(--muted);
-  margin-bottom: 0.4rem;
+.ship-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
 }
 
-.admin-modal .form-group input,
-.admin-modal .form-group select {
-  width: 100%;
-  padding: 0.7rem 1rem;
+.ship-spec-item {
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 8px;
-  color: var(--text);
-  font-size: 0.9rem;
-  outline: none;
+  padding: 1rem;
 }
 
-.admin-modal .form-group input:focus,
-.admin-modal .form-group select:focus {
-  border-color: var(--accent);
+.spec-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
 }
-.section-actions {
-  margin-bottom: 1rem;
+
+.spec-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.spec-value.accent { color: var(--accent); }
+
+.no-ship-msg {
+  text-align: center;
+  padding: 3rem;
+  color: var(--muted);
+}
+
+.no-ship-msg h3 {
+  font-size: 1.1rem;
+  margin: 1rem 0 0.5rem;
+  color: var(--text);
 }

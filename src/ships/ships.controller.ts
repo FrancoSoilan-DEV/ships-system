@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, UseGuards, Request } from '@nestjs/common';
 import { ShipsService } from './ships.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -64,5 +64,13 @@ export class ShipsController {
     basePrice: number;
   }) {
     return this.shipsService.create(body);
+  }
+
+  // GET /api/ships/my → barco asignado al capitán logueado
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('CAPTAIN')
+  @Get('my')
+  findMyCaptainShip(@Request() req: { user: { id: string } }) {
+    return this.shipsService.findByCaptain(req.user.id);
   }
 }

@@ -95,4 +95,19 @@ export class ShipsService {
       },
     });
   }
+
+  async findByCaptain(userId: string) {
+    const captain = await this.prisma.captain.findUnique({
+      where: { userId },
+      include: {
+        ship: {
+          include: {
+            crew: true,
+            _count: { select: { voyages: true } },
+          },
+        },
+      },
+    });
+    return captain?.ship ?? null;
+  }
 }
